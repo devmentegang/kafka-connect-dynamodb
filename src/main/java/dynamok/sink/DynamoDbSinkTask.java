@@ -16,6 +16,8 @@
 
 package dynamok.sink;
 
+import static dynamok.sink.AttributeValueConverter.NULL_VALUE;
+
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -158,6 +160,7 @@ public class DynamoDbSinkTask extends SinkTask {
             attributeValue = schema == null
                     ? AttributeValueConverter.toAttributeValueSchemaless(value)
                     : AttributeValueConverter.toAttributeValue(schema, value);
+            if( attributeValue == NULL_VALUE) return;
         } catch (DataException e) {
             log.error("Failed to convert record with schema={} value={}", schema, value, e);
             throw e;

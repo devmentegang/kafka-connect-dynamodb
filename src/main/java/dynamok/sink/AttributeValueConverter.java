@@ -17,10 +17,12 @@
 package dynamok.sink;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import java.util.Date;
 import org.apache.kafka.connect.data.Decimal;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.data.Timestamp;
 import org.apache.kafka.connect.errors.DataException;
 
 import java.nio.ByteBuffer;
@@ -49,6 +51,10 @@ public class AttributeValueConverter {
 
         if (schema.name() != null && schema.name().equals(Decimal.LOGICAL_NAME)) {
             return new AttributeValue().withN(value.toString());
+        }
+
+        if (schema.name() != null && schema.name().equals(Timestamp.LOGICAL_NAME)) {
+            return new AttributeValue().withS(((Date)value).toInstant().toString());
         }
 
         switch (schema.type()) {
