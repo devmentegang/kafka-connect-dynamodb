@@ -160,7 +160,6 @@ public class DynamoDbSinkTask extends SinkTask {
             attributeValue = schema == null
                     ? AttributeValueConverter.toAttributeValueSchemaless(value)
                     : AttributeValueConverter.toAttributeValue(schema, value);
-            if( attributeValue == NULL_VALUE) return;
         } catch (DataException e) {
             log.error("Failed to convert record with schema={} value={}", schema, value, e);
             throw e;
@@ -168,9 +167,14 @@ public class DynamoDbSinkTask extends SinkTask {
 
         final String topAttributeName = valueSource.topAttributeName(config);
         if (!topAttributeName.isEmpty()) {
+            if (attributeValue == NULL_VALUE) return;
             put.addItemEntry(topAttributeName, attributeValue);
         } else if (attributeValue.getM() != null) {
-            put.setItem(attributeValue.getM());
+            Map<String, AttributeValue> values = new HashMap<>();
+            attributeValue.getM().forEach((k, v) -> {
+                if (v != NULL_VALUE) values.put(k,v);
+            });
+            put.setItem(values);
         } else {
             throw new ConnectException("No top attribute name configured for " + valueSource + ", and it could not be converted to Map: " + attributeValue);
         }
