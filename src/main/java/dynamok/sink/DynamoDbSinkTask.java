@@ -98,7 +98,11 @@ public class DynamoDbSinkTask extends SinkTask {
         try {
             if (records.size() == 1 || config.batchSize == 1) {
                 for (final SinkRecord record : records) {
-                    client.putItem(tableName(record), toPutRequest(record).getItem());
+                    if (record.key() == null) {
+                        client.putItem(tableName(record), toPutRequest(record).getItem());
+                    } else {
+                        client.deleteItem(tableName(record), toPutRequest(record).getItem());
+                    }
                 }
             } else {
                 final Iterator<SinkRecord> recordIterator = records.iterator();
